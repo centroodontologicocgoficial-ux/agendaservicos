@@ -1,5 +1,5 @@
 **/**
-!/*.js
-!/*.gs
-!/*.html
-!/appsscript.json
+!*.js
+!*.gs
+!*.html
+!appsscript.json
