@@ -1,0 +1,56 @@
+name: Atualizar Apps Script
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '*.js'
+      - '*.gs'
+      - '*.html'
+      - appsscript.json
+      - .clasp.json
+      - .claspignore
+      - .github/workflows/apps-script.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: apps-script-production
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Instalar clasp
+        run: npm install --global @google/clasp@3.4.1
+      - name: Configurar autenticacao Google
+        shell: bash
+        env:
+          CLASPRC_JSON: ${{ secrets.CLASPRC_JSON }}
+        run: |
+          if [ -z "$CLASPRC_JSON" ]; then
+            echo "::error::Cadastre o repository secret CLASPRC_JSON nas configuracoes do GitHub Actions."
+            exit 1
+          fi
+          umask 077
+          printf '%s' "$CLASPRC_JSON" > "$HOME/.clasprc.json"
+          node -e 'JSON.parse(require("fs").readFileSync(require("os").homedir()+"/.clasprc.json","utf8"))'
+      - name: Conferir arquivos do projeto
+        run: clasp show-file-status
+      - name: Enviar fontes ao Apps Script
+        run: clasp push --force
+      - name: Atualizar a implantacao existente
+        run: clasp deploy --deploymentId AKfycbxTRYf87DF_k9NPWg3YEqwsdqCx3PJs-PpSemjxbmPkLAYm09zhXjgCi37Ynu971A2D --description "GitHub ${GITHUB_SHA}"
+      - name: Remover credencial do runner
+        if: always()
+        run: rm -f "$HOME/.clasprc.json"
