@@ -102,8 +102,24 @@ var AgendamentoService = (function() {
 
     var codigoAgendamento = AgendamentoRepository.salvar(agendamento);
 
+    // O registro já foi persistido: falha no e-mail não desfaz o cadastro.
+    var notificacao = "";
+    try {
+      notificacao = AgendamentoEmailEnvioService.confirmar({
+        codigo: codigoAgendamento,
+        data: dataTexto,
+        hora: horaTexto,
+        codigoFuncionario: codigoFuncionario,
+        codigoCliente: codigoCliente,
+        codigoServico: codigoServico,
+        status: status
+      });
+    } catch (erroEnvio) {
+      notificacao = "falha no envio da confirmação";
+      console.error("Agendamento " + codigoAgendamento + ": " + erroEnvio.message);
+    }
     return "Agendamento cadastrado com sucesso! Código: " +
-      codigoAgendamento;
+      codigoAgendamento + ". E-mail: " + notificacao + ".";
   }
 
 
