@@ -548,6 +548,7 @@
           <button type="button" class="botao-principal" id="btnVerificarEmails"
             onclick="verificarEmailsAgendaTela()">Verificar E-mails</button>
           <div id="mensagemEmailsAgenda" class="mensagem" aria-live="polite"></div>
+          <div id="relatorioEmailsAgenda" aria-live="polite"></div>
         </div>
       </div>
     
@@ -1096,6 +1097,26 @@
           }
           mostrarMensagem("mensagemEmailsAgenda", mensagem,
             resumo.rejeitados ? "erro" : "sucesso");
+          var relatorio = document.getElementById("relatorioEmailsAgenda");
+          relatorio.replaceChildren();
+          (resumo.mensagens || []).forEach(function (item) {
+            var caixa = document.createElement("div");
+            caixa.style.cssText = "padding:12px;margin-top:10px;border:1px solid #ccc;border-radius:8px;white-space:pre-wrap";
+            var titulo = document.createElement("strong");
+            titulo.textContent = item.situacao + " — " + item.assunto;
+            var descricao = document.createElement("div");
+            descricao.textContent = "Recebido: " + item.recebidoEm +
+              "\nRemetente: " + item.remetente +
+              "\nMotivo: " + item.motivo +
+              "\n\nDados recebidos:\n" + item.conteudo;
+            caixa.appendChild(titulo);
+            caixa.appendChild(descricao);
+            relatorio.appendChild(caixa);
+          });
+          if (!resumo.mensagens || !resumo.mensagens.length) {
+            relatorio.textContent = "Nenhum e-mail novo com assunto AGENDAMENTO encontrado.";
+          }
+
           carregarGradeCadastro("Agendamento");
           botao.disabled = false;
           botao.textContent = "Verificar E-mails";
