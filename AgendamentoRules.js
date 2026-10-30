@@ -116,7 +116,52 @@ var AgendamentoRules = (function() {
   }
 
 
+  /**
+   * Impede sobreposição de horários de um profissional e agendamento
+   * idêntico já existente. Usa a duração cadastrada de cada serviço.
+   * @param {Object} dados Agendamento proposto.
+   * @param {Object} servico Serviço solicitado.
+   * @param {Object[]} existentes Registros atuais.
+   * @param {Object[]} servicos Catálogo com duração em minutos.
+   * @throws {Error} Quando a disponibilidade não puder ser garantida.
+   */
+  function validarDisponibilidadeEmail(dados, servico, existentes, servicos) {
+    var duracao = Number(servico.tempo);
+    if (!isFinite(duracao) || duracao <= 0) {
+      throw new Error("Serviço sem duração válida.");
+    }
+    var inicio = minutos_(dados.hora);
+    var fim = inicio + duracao;
+    if (fim > 1440) throw new Error("Serviço ultrapassa o fim do dia.");
+    existentes.forEach(function (atual) {
+      if (atual.status === "CANCELADO") return;
+      if (String(atual.codigoFuncionario) !== String(dados.codigo_funcionario)) return;
+      if (atual.data !== dados.data) return;
+      var anterior = servicos.filter(function (s) {
+        return String(s.codigo) === String(atual.codigoServico);
+      })[0];
+      if (!anterior || Number(anterior.tempo) <= 0) {
+        throw new Error("Não foi possível validar a duração de um agendamento existente.");
+      }
+      var inicioExistente = minutos_(atual.hora);
+      if (inicio < inicioExistente + Number(anterior.tempo) &&
+          inicioExistente < fim) {
+        throw new Error("Conflito de horário para o profissional.");
+      }
+    });
+  }
+
+  /** Converte HH:MM em minutos desde meia-noite. */
+  function minutos_(hora) {
+    var partes = /^(\\d{2}):(\\d{2})$/.exec(String(hora));
+    if (!partes || Number(partes[1]) > 23 || Number(partes[2]) > 59) {
+      throw new Error("Horário existente inválido: " + hora);
+    }
+    return Number(partes[1]) * 60 + Number(partes[2]);
+  }
+
   return {
+    validarDisponibilidadeEmail: validarDisponibilidadeEmail,
     normalizarStatus: normalizarStatus,
     validarStatus: validarStatus,
     validarReferencias: validarReferencias,
