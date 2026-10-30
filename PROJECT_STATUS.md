@@ -76,3 +76,11 @@ Executar testes controlados com mensagens de exemplo e planilha de testes; corri
 - Arquivos mantidos: demais arquivos, inclusive `AgendamentoEmailService.js` e `PROJECT_GUIDE.md`.
 - Arquivos excluídos: nenhum; não há exclusões seguras identificadas.
 - Como testar: em cópia de testes, cadastrar cliente com e-mail controlado, criar agendamento e verificar confirmação; executar `verificarLembretesAgendamento` com atendimento dentro de 24h e executar novamente para confirmar ausência de duplicação.
+
+## Testes isolados de notificações — 29/10/2026
+- Executados 5 testes com os arquivos reais obtidos do GitHub e dependências simuladas: confirmação, não duplicação de confirmação, primeira ativação, exclusão de e-mails antigos e cancelamento.
+- Resultado: **5 aprovados, 0 reprovados** no ambiente simulado.
+- Criado `AgendamentoEmailEnvio.test.cjs` e `.github/workflows/agendamento-tests.yml`.
+- Não foi possível confirmar execução do GitHub Actions nessa ramificação: nenhuma execução apareceu na consulta ao histórico.
+- Não houve envio real de e-mail, gravação real em planilha nem implantação.
+- Próximo passo: testes de integração no Apps Script em ambiente controlado, incluindo lembrete de 24h, permissões e cotas.
