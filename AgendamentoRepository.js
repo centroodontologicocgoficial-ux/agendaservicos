@@ -333,7 +333,82 @@ var AgendamentoRepository = (function() {
       });
   }
 
+  /**
+   * Consulta datas e horários brutos para verificar disponibilidade.
+   * @return {Object[]} Compromissos com códigos e horários normalizados.
+   */
+  function listarParaConflito() {
+    var aba = obterAba_(ABA_AGENDA);
+    verificarCabecalhos_(aba, ["Código", "Data", "Hora", "Codigo_funcionario", "Codigo_cliente", "Codigo_servico", "Valor", "Status"]);
+    if (aba.getLastRow() < 2) return [];
+    var linhas = aba.getRange(2, 1, aba.getLastRow() - 1, 8).getValues();
+    var fuso = Session.getScriptTimeZone();
+    return linhas.filter(function (linha) { return String(linha[0]).trim() !== ""; })
+      .map(function (linha) {
+        var data = linha[1] instanceof Date
+          ? Utilities.formatDate(linha[1], fuso, "yyyy-MM-dd")
+          : String(linha[1]).trim();
+        var hora = linha[2] instanceof Date
+          ? Utilities.formatDate(linha[2], fuso, "HH:mm")
+          : String(linha[2]).trim();
+        return {data: data, hora: hora, codigoFuncionario: String(linha[3]).trim(),
+          codigoCliente: String(linha[4]).trim(), codigoServico: String(linha[5]).trim(),
+          status: String(linha[7]).trim().toUpperCase()};
+      });
+  }
+
+
+  /**
+   * Consulta o contato de um cliente diretamente na aba CLIENTES.
+   * @param {string|number} codigo Código do cliente.
+   * @return {Object|null} Nome e endereço eletrônico, ou null.
+   */
+  function buscarContatoCliente(codigo) {
+    var aba = obterAba_(ABA_CLIENTES);
+    verificarCabecalhos_(aba, ["Código", "Nome", "CPF", "Dt_aniversario",
+      "Endereço", "Número", "Codigo_cidade", "Codigo_bairro", "CEP",
+      "Celular", "E-mail", "Status_financeiro"]);
+    if (aba.getLastRow() < 2) return null;
+    var linhas = aba.getRange(2, 1, aba.getLastRow() - 1, 11).getDisplayValues();
+    for (var i = 0; i < linhas.length; i++) {
+      if (String(linhas[i][0]).trim() === String(codigo).trim()) {
+        return {nome: String(linhas[i][1]).trim(), email: String(linhas[i][10]).trim()};
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Lista compromissos com identificador e dados normalizados para lembretes.
+   * @return {Object[]} Agendamentos com código, data, hora e referências.
+   */
+  function listarParaLembretes() {
+    var aba = obterAba_(ABA_AGENDA);
+    verificarCabecalhos_(aba, ["Código", "Data", "Hora", "Codigo_funcionario",
+      "Codigo_cliente", "Codigo_servico", "Valor", "Status"]);
+    if (aba.getLastRow() < 2) return [];
+    var linhas = aba.getRange(2, 1, aba.getLastRow() - 1, 8).getValues();
+    var fuso = Session.getScriptTimeZone();
+    return linhas.filter(function (linha) { return String(linha[0]).trim() !== ""; })
+      .map(function (linha) {
+        var data = linha[1] instanceof Date
+          ? Utilities.formatDate(linha[1], fuso, "yyyy-MM-dd")
+          : String(linha[1]).trim();
+        var hora = linha[2] instanceof Date
+          ? Utilities.formatDate(linha[2], fuso, "HH:mm")
+          : String(linha[2]).trim();
+        return {codigo: String(linha[0]).trim(), data: data, hora: hora,
+          codigoFuncionario: String(linha[3]).trim(),
+          codigoCliente: String(linha[4]).trim(),
+          codigoServico: String(linha[5]).trim(),
+          status: String(linha[7]).trim().toUpperCase()};
+      });
+  }
+
   return {
+    buscarContatoCliente: buscarContatoCliente,
+    listarParaLembretes: listarParaLembretes,
+    listarParaConflito: listarParaConflito,
     listarParaGrade: listarParaGrade,
     listarFuncionarios: listarFuncionarios,
     listarClientes: listarClientes,

@@ -544,6 +544,11 @@
           </button>
           <div id="mensagemAgenda" class="mensagem"></div>
         </form>
+        <div style="margin-top: 16px">
+          <button type="button" class="botao-principal" id="btnVerificarEmails"
+            onclick="verificarEmailsAgendaTela()">Verificar E-mails</button>
+          <div id="mensagemEmailsAgenda" class="mensagem" aria-live="polite"></div>
+        </div>
       </div>
     
       <div class="cartao">
@@ -1068,6 +1073,40 @@
           botao.textContent = "Cadastrar cliente";
         })
         .cadastrarCliente(dados);
+    }
+
+    /**
+     * Solicita a verificação manual do Gmail e apresenta um resumo.
+     * Não altera o formulário de cadastro manual.
+     */
+    function verificarEmailsAgendaTela() {
+      var botao = document.getElementById("btnVerificarEmails");
+      botao.disabled = true;
+      botao.textContent = "Verificando...";
+      limparMensagem("mensagemEmailsAgenda");
+      google.script.run
+        .withSuccessHandler(function (resumo) {
+          var mensagem = resumo.ativadoAgora
+            ? "Verificação ativada. Somente e-mails recebidos a partir de agora serão processados nas próximas verificações."
+            : "Cadastrados: " + resumo.cadastrados +
+            " | Já processados: " + resumo.ignorados +
+            " | Rejeitados: " + resumo.rejeitados;
+          if (resumo.detalhes && resumo.detalhes.length) {
+            mensagem += " | " + resumo.detalhes.join(" ; ");
+          }
+          mostrarMensagem("mensagemEmailsAgenda", mensagem,
+            resumo.rejeitados ? "erro" : "sucesso");
+          carregarGradeCadastro("Agendamento");
+          botao.disabled = false;
+          botao.textContent = "Verificar E-mails";
+        })
+        .withFailureHandler(function (erro) {
+          mostrarMensagem("mensagemEmailsAgenda",
+            erro.message || "Falha ao verificar e-mails.", "erro");
+          botao.disabled = false;
+          botao.textContent = "Verificar E-mails";
+        })
+        .verificarEmailsAgendamento();
     }
 
     /**

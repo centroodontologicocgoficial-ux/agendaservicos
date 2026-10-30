@@ -1,0 +1,16 @@
+name: Testes de Agendamento
+on:
+  push:
+    branches: [feature/verificar-emails-agendamento]
+  pull_request:
+    branches: [main]
+jobs:
+  testes:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Executar testes sem acesso a Gmail real
+        run: node AgendamentoEmailEnvio.test.cjs
