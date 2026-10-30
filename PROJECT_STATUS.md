@@ -84,3 +84,11 @@ Executar testes controlados com mensagens de exemplo e planilha de testes; corri
 - Não foi possível confirmar execução do GitHub Actions nessa ramificação: nenhuma execução apareceu na consulta ao histórico.
 - Não houve envio real de e-mail, gravação real em planilha nem implantação.
 - Próximo passo: testes de integração no Apps Script em ambiente controlado, incluindo lembrete de 24h, permissões e cotas.
+
+## Correção da importação de e-mails — 29/10/2026
+- `AgendamentoEmailService.js` aceita assunto `AGENDAMENTO` independentemente de maiúsculas/minúsculas e os campos `Hora:` e `Horário:`.
+- Mantidas as regras: apenas mensagens posteriores à ativação, correspondência com cadastros existentes, validação e prevenção de duplicação.
+- Teste isolado executado com assunto `AGENDAMENTO`, campo `Horário: 14:30`, data `30/10/2026`: 1 cadastro simulado; segunda execução: 0 novos, 1 ignorado.
+- Não foram executados testes com Gmail e Sheets reais nesta etapa.
+- Arquivo alterado: `AgendamentoEmailService.js`. Demais arquivos mantidos. Nenhum excluído.
+- Próximo passo: validar importação real e publicar após revisão.
