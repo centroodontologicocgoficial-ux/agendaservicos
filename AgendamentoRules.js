@@ -153,7 +153,7 @@ var AgendamentoRules = (function() {
 
   /** Converte HH:MM em minutos desde meia-noite. */
   function minutos_(hora) {
-    var partes = /^(\\d{2}):(\\d{2})$/.exec(String(hora));
+    var partes = /^(\d{2}):(\d{2})$/.exec(String(hora));
     if (!partes || Number(partes[1]) > 23 || Number(partes[2]) > 59) {
       throw new Error("Horário existente inválido: " + hora);
     }
