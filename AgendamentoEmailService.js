@@ -2,8 +2,7 @@
  * Entidade: Agendamento
  * Camada: Service — integração de e-mails
  *
- * Responsabilidade: processar mensagens recebidas com assunto exatamente
- * "Agendamento" e reutilizar o cadastro existente, sem criar entidades.
+ * Responsabilidade: processar mensagens recebidas com assunto "AGENDAMENTO" (sem diferenciar maiúsculas e minúsculas) e reutilizar o cadastro existente, sem criar entidades.
  * Dependências: GmailApp, PropertiesService, LockService, AgendamentoService,
  * AgendamentoRepository, AgendamentoRules e AgendamentoValidator.
  *
@@ -42,9 +41,10 @@ var AgendamentoEmailService = (function () {
   function extrair_(corpo) {
     var campos = {};
     String(corpo || "").split(/\r?\n/).forEach(function (linha) {
-      var resultado = /^\s*(Cliente|Servi[cç]o|Profissional|Data|Hora)\s*:\s*(.*?)\s*$/i.exec(linha);
+      var resultado = /^\s*(Cliente|Servi[cç]o|Profissional|Data|Hora|Hor[aá]rio)\s*:\s*(.*?)\s*$/i.exec(linha);
       if (!resultado) return;
       var chave = chaveNome_(resultado[1]);
+      if (chave === "horario") chave = "hora";
       if (Object.prototype.hasOwnProperty.call(campos, chave)) {
         throw new Error("Campo repetido: " + resultado[1] + ".");
       }
@@ -109,7 +109,7 @@ var AgendamentoEmailService = (function () {
       // A pesquisa do Gmail localiza assuntos semelhantes: conferir igualdade.
       conversas.forEach(function (conversa) {
         conversa.getMessages().forEach(function (mensagem) {
-          if (String(mensagem.getSubject()).trim() !== "Agendamento") return;
+          if (chaveNome_(mensagem.getSubject()) !== "agendamento") return;
           if (mensagem.getDate().getTime() < inicioAtivacao) return;
           var chave = PREFIXO + mensagem.getId();
           if (propriedades.getProperty(chave)) {
