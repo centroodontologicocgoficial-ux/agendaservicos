@@ -1086,7 +1086,9 @@
       limparMensagem("mensagemEmailsAgenda");
       google.script.run
         .withSuccessHandler(function (resumo) {
-          var mensagem = "Cadastrados: " + resumo.cadastrados +
+          var mensagem = resumo.ativadoAgora
+            ? "Verificação ativada. Somente e-mails recebidos a partir de agora serão processados nas próximas verificações."
+            : "Cadastrados: " + resumo.cadastrados +
             " | Já processados: " + resumo.ignorados +
             " | Rejeitados: " + resumo.rejeitados;
           if (resumo.detalhes && resumo.detalhes.length) {
