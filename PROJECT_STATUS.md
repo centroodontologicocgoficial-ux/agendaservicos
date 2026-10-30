@@ -92,3 +92,9 @@ Executar testes controlados com mensagens de exemplo e planilha de testes; corri
 - Não foram executados testes com Gmail e Sheets reais nesta etapa.
 - Arquivo alterado: `AgendamentoEmailService.js`. Demais arquivos mantidos. Nenhum excluído.
 - Próximo passo: validar importação real e publicar após revisão.
+
+## Relatório de verificação de e-mails — 29/10/2026
+- Adicionado relatório individual com assunto, remetente, recebimento, conteúdo, situação e motivo do cadastro ou rejeição.
+- Arquivos alterados: AgendamentoEmailService.js e index.html. Nenhum arquivo removido.
+- Teste isolado: e-mail válido cadastrado, cliente inexistente rejeitado com motivo e e-mail já processado não duplicado.
+- Testes reais de Gmail/Sheets e publicação na main ainda pendentes.
