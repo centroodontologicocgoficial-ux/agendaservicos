@@ -60,3 +60,19 @@ Nenhum. Arquivos `GradeV2_*` aparentam duplicar conteúdos, mas não devem ser e
 
 ## Próximo passo
 Executar testes controlados com mensagens de exemplo e planilha de testes; corrigir falhas encontradas e somente depois aprovar integração à `main`.
+
+## Etapa: envio de confirmação e lembretes (29/10/2026)
+- **Implementado em ramificação de desenvolvimento, não homologado.**
+- Novo `AgendamentoEmailEnvioService.js`: confirmação ao cliente após salvar o agendamento; lembrete para agendamentos AGENDADO ou CONFIRMADO nas próximas 24 horas.
+- `AgendamentoService.js` alterado para solicitar confirmação após gravação; falha no envio não desfaz agendamento salvo.
+- `AgendamentoRepository.js` alterado para ler a coluna E-mail de CLIENTES e os agendamentos com seus códigos.
+- `PROJECT_STATUS.md` atualizado no GitHub; o documento homônimo no Google Drive permanece separado.
+- O envio é feito via `MailApp`, sujeito à autorização e cotas do Google Apps Script.
+- O lembrete **não tem gatilho automático instalado**. Executar `verificarLembretesAgendamento` manualmente ou configurar um gatilho diário no Apps Script após homologação.
+- Evita reenvio usando `PropertiesService` por código de agendamento e, no lembrete, data/hora.
+- Pendências: testes reais de integração, verificar dados de clientes e horários, cotas e autorização de e-mail; confirmar timezone do projeto; testar falha de MailApp e idempotência; validar execução de gatilho.
+- Arquivos criados: `AgendamentoEmailEnvioService.js`.
+- Arquivos alterados: `AgendamentoService.js`, `AgendamentoRepository.js`, `PROJECT_STATUS.md`.
+- Arquivos mantidos: demais arquivos, inclusive `AgendamentoEmailService.js` e `PROJECT_GUIDE.md`.
+- Arquivos excluídos: nenhum; não há exclusões seguras identificadas.
+- Como testar: em cópia de testes, cadastrar cliente com e-mail controlado, criar agendamento e verificar confirmação; executar `verificarLembretesAgendamento` com atendimento dentro de 24h e executar novamente para confirmar ausência de duplicação.
