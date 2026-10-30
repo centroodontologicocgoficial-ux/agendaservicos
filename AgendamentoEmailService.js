@@ -76,7 +76,7 @@ var AgendamentoEmailService = (function () {
     }
     try {
       var propriedades = PropertiesService.getScriptProperties();
-      var resumo = {cadastrados: 0, ignorados: 0, rejeitados: 0, detalhes: []};
+      var resumo = {cadastrados: 0, ignorados: 0, rejeitados: 0, detalhes: [], mensagens: []};
       var ativacao = propriedades.getProperty(CHAVE_ATIVACAO);
       if (!ativacao) {
         // A primeira execução ativa o recurso sem consultar ou gravar e-mails
@@ -112,8 +112,12 @@ var AgendamentoEmailService = (function () {
           if (chaveNome_(mensagem.getSubject()) !== "agendamento") return;
           if (mensagem.getDate().getTime() < inicioAtivacao) return;
           var chave = PREFIXO + mensagem.getId();
+          var item = {assunto: String(mensagem.getSubject()), recebidoEm: Utilities.formatDate(mensagem.getDate(), Session.getScriptTimeZone(), "dd/MM/yyyy HH:mm"), remetente: mensagem.getFrom(), conteudo: String(mensagem.getPlainBody() || "").slice(0, 1200), situacao: "", motivo: ""};
+          resumo.mensagens.push(item);
           if (propriedades.getProperty(chave)) {
             resumo.ignorados++;
+            item.situacao = "Já processado";
+            item.motivo = "Mensagem cadastrada anteriormente.";
             return;
           }
           try {
@@ -137,8 +141,12 @@ var AgendamentoEmailService = (function () {
             var resultado = AgendamentoService.cadastrar(dados);
             propriedades.setProperty(chave, resultado);
             resumo.cadastrados++;
+            item.situacao = "Cadastrado";
+            item.motivo = "Agendamento incluído na agenda.";
           } catch (erro) {
             resumo.rejeitados++;
+            item.situacao = "Não cadastrado";
+            item.motivo = erro.message || String(erro);
             resumo.detalhes.push("Mensagem " + mensagem.getId() + ": " + erro.message);
           }
         });
