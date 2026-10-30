@@ -13,6 +13,7 @@
 var AgendamentoEmailService = (function () {
   var PREFIXO = "agenda_email_processado_";
   var LIMITE_CONVERSAS = 300;
+  var CHAVE_ATIVACAO = "agenda_email_ativacao_em";
 
   /** Normaliza nomes apenas para comparação, preservando códigos originais. */
   function chaveNome_(valor) {
@@ -76,12 +77,32 @@ var AgendamentoEmailService = (function () {
     try {
       var propriedades = PropertiesService.getScriptProperties();
       var resumo = {cadastrados: 0, ignorados: 0, rejeitados: 0, detalhes: []};
+      var ativacao = propriedades.getProperty(CHAVE_ATIVACAO);
+      if (!ativacao) {
+        // A primeira execução ativa o recurso sem consultar ou gravar e-mails
+        // anteriores. A marca é persistida para todas as próximas execuções.
+        ativacao = String(Date.now());
+        propriedades.setProperty(CHAVE_ATIVACAO, ativacao);
+        resumo.ativadoAgora = true;
+        resumo.detalhes.push("Verificação ativada. Somente mensagens recebidas a partir de agora serão processadas nas próximas verificações.");
+        return resumo;
+      }
+      var inicioAtivacao = Number(ativacao);
+      if (!isFinite(inicioAtivacao) || inicioAtivacao <= 0) {
+        throw new Error("Data de ativação inválida. Consulte o administrador.");
+      }
       var clientes = AgendamentoRepository.listarClientes();
       var profissionais = AgendamentoRepository.listarFuncionarios();
       var servicos = AgendamentoRepository.listarServicos();
+      // O filtro por data reduz a pesquisa; a comparação por timestamp
+      // abaixo é a regra definitiva, inclusive para o dia da ativação.
+      var dataPesquisa = Utilities.formatDate(
+        new Date(inicioAtivacao - 86400000),
+        Session.getScriptTimeZone(), "yyyy/MM/dd");
+      var consulta = 'subject:Agendamento after:' + dataPesquisa;
       var conversas = [];
       for (var inicio = 0; inicio < LIMITE_CONVERSAS; inicio += 100) {
-        var lote = GmailApp.search('subject:Agendamento', inicio, 100);
+        var lote = GmailApp.search(consulta, inicio, 100);
         conversas = conversas.concat(lote);
         if (lote.length < 100) break;
       }
@@ -89,6 +110,7 @@ var AgendamentoEmailService = (function () {
       conversas.forEach(function (conversa) {
         conversa.getMessages().forEach(function (mensagem) {
           if (String(mensagem.getSubject()).trim() !== "Agendamento") return;
+          if (mensagem.getDate().getTime() < inicioAtivacao) return;
           var chave = PREFIXO + mensagem.getId();
           if (propriedades.getProperty(chave)) {
             resumo.ignorados++;
