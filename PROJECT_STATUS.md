@@ -27,11 +27,17 @@ Aceitar solicitações de **qualquer remetente**, desde que o assunto seja exata
 Campos esperados no corpo: Cliente, Serviço, Profissional, Data e Hora.
 Somente registros válidos devem ser cadastrados; não criar clientes, serviços ou profissionais automaticamente.
 
+## Regra de ativação implementada
+- Na primeira execução de **Verificar E-mails**, grava-se a marca de tempo `agenda_email_ativacao_em` nas Script Properties e não são importadas mensagens.
+- Nas próximas execuções, apenas mensagens com data de recebimento igual ou posterior à ativação são elegíveis.
+- O filtro de busca Gmail é complementar; a data de cada mensagem é conferida individualmente.
+- Não há opção automática de reiniciar a ativação, para evitar reprocessamento acidental.
+
 ## Em andamento e pendências de validação
-- Testar com Gmail e Google Sheets reais, incluindo autorização do Gmail.
+- Testar com Gmail e Google Sheets reais, incluindo autorização do Gmail e primeira ativação.
 - Verificar a compatibilidade dos formatos de data/hora armazenados na planilha.
 - Validar idempotência, duplicidades, duração, conflito de horários e concorrência.
-- Revisar limite/paginação da consulta Gmail e tratamento de mensagens rejeitadas.
+- Revisar limite/paginação da consulta Gmail e tratamento de mensagens rejeitadas; há limite de 300 conversas por verificação.
 - Verificar publicação do GitHub Actions e autorização CLASPRC_JSON.
 - Não integrar à `main` nem publicar em produção antes dos testes.
 
