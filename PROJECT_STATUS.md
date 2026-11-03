@@ -113,3 +113,10 @@ Executar testes controlados com mensagens de exemplo e planilha de testes; corri
 - Mantidos os demais serviços, regras, validadores e repositórios. Nenhum arquivo excluído.
 - O recurso ativa na primeira execução e só processa mensagens posteriores; compartilha a marca de e-mails processados com o botão original.
 - Teste real depende da chave válida `GROQ_API_KEY`, permissões de UrlFetchApp/Gmail e execução autenticada no Apps Script. Não publicar em produção antes dos testes automatizados.
+
+## Diagnóstico de falha Groq HTTP 404 — 03/11/2026
+- Usuário confirmou na interface que a autorização de `UrlFetchApp.fetch` foi superada; chamada à Groq retornou HTTP 404. Nenhum agendamento cadastrado na tentativa.
+- Alterado `AgendamentoGroqService.js`: quando a API devolve JSON com `error.message`, mostrar mensagem limitada a 350 caracteres, sem incluir chave, cabeçalhos ou corpo do e-mail. Em HTTP 404, orientar verificar `GROQ_MODEL` e disponibilidade do modelo.
+- Alterado `AgendamentoGroq.test.cjs`: teste isolado do diagnóstico HTTP 404 sem vazamento da chave.
+- Criados: nenhum. Mantidos: interface, repositórios, regras, validadores, serviços de e-mail e demais fontes. Excluídos: nenhum.
+- Como testar: executar testes automatizados; depois clicar em `Ler E-mails com IA` e observar a mensagem retornada. Não foi realizada chamada real com a chave Groq nem gravação em Sheets nesta etapa.
