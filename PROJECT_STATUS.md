@@ -98,3 +98,10 @@ Executar testes controlados com mensagens de exemplo e planilha de testes; corri
 - Arquivos alterados: AgendamentoEmailService.js e index.html. Nenhum arquivo removido.
 - Teste isolado: e-mail válido cadastrado, cliente inexistente rejeitado com motivo e e-mail já processado não duplicado.
 - Testes reais de Gmail/Sheets e publicação na main ainda pendentes.
+
+## Correção proposta — repositório duplicado (03/11/2026)
+- Diagnóstico: `GradeV2_AgendamentoRepository.js` redefinia `AgendamentoRepository` sem exportar `listarParaConflito`, provocando erro no cadastro por e-mail. `GradeV2_AgendamentoService.js` também redefinia `AgendamentoService`, podendo suprimir a confirmação por e-mail.
+- Em ramificação de correção, foram removidos apenas esses dois arquivos legados duplicados; o histórico Git preserva seu conteúdo.
+- Arquivos criados: nenhum. Alterados: `PROJECT_STATUS.md`. Mantidos: `AgendamentoRepository.js`, `AgendamentoService.js`, `AgendamentoRules.js`, `AgendamentoEmailService.js` e os demais arquivos. Excluídos na ramificação: `GradeV2_AgendamentoRepository.js` e `GradeV2_AgendamentoService.js`, por duplicação das responsabilidades já assumidas pelos arquivos canônicos.
+- Validação estática: árvore da ramificação contém apenas um `AgendamentoRepository.js` e um `AgendamentoService.js`; nenhum teste real Gmail/Sheets foi executado.
+- Próximo passo: revisar dependências, executar testes automatizados e teste controlado no Apps Script; só depois aprovar a integração à `main` e a publicação em produção.
