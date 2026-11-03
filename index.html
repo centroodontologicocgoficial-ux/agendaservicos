@@ -549,6 +549,12 @@
             onclick="verificarEmailsAgendaTela()">Verificar E-mails</button>
           <div id="mensagemEmailsAgenda" class="mensagem" aria-live="polite"></div>
           <div id="relatorioEmailsAgenda" aria-live="polite"></div>
+          <div style="margin-top: 12px">
+            <button type="button" class="botao-principal" id="btnVerificarEmailsIA"
+              onclick="verificarEmailsIAAgendaTela()">Ler E-mails com IA</button>
+            <div id="mensagemEmailsIAAgenda" class="mensagem" aria-live="polite"></div>
+            <div id="relatorioEmailsIAAgenda" aria-live="polite"></div>
+          </div>
         </div>
       </div>
     
@@ -1128,6 +1134,49 @@
           botao.textContent = "Verificar E-mails";
         })
         .verificarEmailsAgendamento();
+    }
+
+    /**
+     * Aciona a importação assistida pela Groq sem alterar o botão original.
+     * Exibe somente situação e motivo, sem expor o corpo dos e-mails.
+     */
+    function verificarEmailsIAAgendaTela() {
+      var botao = document.getElementById("btnVerificarEmailsIA");
+      botao.disabled = true;
+      botao.textContent = "Lendo com IA...";
+      limparMensagem("mensagemEmailsIAAgenda");
+      document.getElementById("relatorioEmailsIAAgenda").replaceChildren();
+      google.script.run
+        .withSuccessHandler(function (resumo) {
+          var texto = resumo.ativadoAgora
+            ? "Leitura com IA ativada. Apenas novos e-mails serão processados."
+            : "Cadastrados: " + resumo.cadastrados +
+              " | Já processados: " + resumo.ignorados +
+              " | Rejeitados: " + resumo.rejeitados;
+          if (resumo.detalhes && resumo.detalhes.length) {
+            texto += " | " + resumo.detalhes.join(" ; ");
+          }
+          mostrarMensagem("mensagemEmailsIAAgenda", texto,
+            resumo.rejeitados ? "erro" : "sucesso");
+          var relatorio = document.getElementById("relatorioEmailsIAAgenda");
+          (resumo.mensagens || []).forEach(function (item) {
+            var linha = document.createElement("div");
+            linha.style.cssText = "padding:10px;margin-top:8px;border:1px solid #ccc;border-radius:8px";
+            linha.textContent = item.situacao + " — " + item.assunto +
+              " (" + item.recebidoEm + "): " + item.motivo;
+            relatorio.appendChild(linha);
+          });
+          carregarGradeCadastro("Agendamento");
+          botao.disabled = false;
+          botao.textContent = "Ler E-mails com IA";
+        })
+        .withFailureHandler(function (erro) {
+          mostrarMensagem("mensagemEmailsIAAgenda",
+            erro.message || "Falha ao ler e-mails com IA.", "erro");
+          botao.disabled = false;
+          botao.textContent = "Ler E-mails com IA";
+        })
+        .verificarEmailsAgendamentoIA();
     }
 
     /**

@@ -105,3 +105,11 @@ Executar testes controlados com mensagens de exemplo e planilha de testes; corri
 - Arquivos criados: nenhum. Alterados: `PROJECT_STATUS.md`. Mantidos: `AgendamentoRepository.js`, `AgendamentoService.js`, `AgendamentoRules.js`, `AgendamentoEmailService.js` e os demais arquivos. Excluídos na ramificação: `GradeV2_AgendamentoRepository.js` e `GradeV2_AgendamentoService.js`, por duplicação das responsabilidades já assumidas pelos arquivos canônicos.
 - Validação estática: árvore da ramificação contém apenas um `AgendamentoRepository.js` e um `AgendamentoService.js`; nenhum teste real Gmail/Sheets foi executado.
 - Próximo passo: revisar dependências, executar testes automatizados e teste controlado no Apps Script; só depois aprovar a integração à `main` e a publicação em produção.
+
+## Integração Groq — preparação em ramificação (03/11/2026)
+- Adicionados `AgendamentoGroqService.js` (API Groq, chave GROQ_API_KEY em Script Properties) e `AgendamentoEmailIAService.js` (leitura Gmail, correspondência com cadastros, validação, conflito e prevenção de duplicação).
+- `index.html` recebeu botão independente `Ler E-mails com IA`; botão antigo mantido.
+- Criado `AgendamentoGroq.test.cjs` e atualizado `.github/workflows/agendamento-tests.yml` para executar os testes.
+- Mantidos os demais serviços, regras, validadores e repositórios. Nenhum arquivo excluído.
+- O recurso ativa na primeira execução e só processa mensagens posteriores; compartilha a marca de e-mails processados com o botão original.
+- Teste real depende da chave válida `GROQ_API_KEY`, permissões de UrlFetchApp/Gmail e execução autenticada no Apps Script. Não publicar em produção antes dos testes automatizados.

@@ -1,7 +1,7 @@
 name: Testes de Agendamento
 on:
   push:
-    branches: [feature/verificar-emails-agendamento]
+    branches: [feature/verificar-emails-agendamento, feature/ler-emails-groq]
   pull_request:
     branches: [main]
 jobs:
@@ -13,4 +13,4 @@ jobs:
         with:
           node-version: '22'
       - name: Executar testes sem acesso a Gmail real
-        run: node AgendamentoEmailEnvio.test.cjs
+        run: node AgendamentoEmailEnvio.test.cjs && node AgendamentoGroq.test.cjs
