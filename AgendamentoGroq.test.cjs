@@ -50,3 +50,18 @@ assert.equal(segundo.ignorados, 1);
 assert.equal(gravados, 1);
 assert.equal(chamadas, 1);
 console.log('OK: ativação, interpretação, cadastro e prevenção de duplicação.');
+
+/** Erros HTTP expõem somente a mensagem devolvida pela API, sem credenciais. */
+const respostaOriginal = contexto.UrlFetchApp.fetch;
+contexto.UrlFetchApp.fetch = () => ({
+  getResponseCode: () => 404,
+  getContentText: () => JSON.stringify({error: {message: 'model_not_found: modelo indisponível'}})
+});
+assert.throws(
+  () => contexto.AgendamentoGroqService.extrairAgendamento('Agendamento de teste'),
+  erro => erro.message.includes('HTTP 404') &&
+    erro.message.includes('modelo indisponível') &&
+    !erro.message.includes('chave-simulada')
+);
+contexto.UrlFetchApp.fetch = respostaOriginal;
+console.log('OK: erro HTTP 404 apresenta motivo sem revelar a chave.');

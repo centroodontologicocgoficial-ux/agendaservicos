@@ -38,7 +38,20 @@ var AgendamentoGroqService = (function () {
     });
     var status = resposta.getResponseCode();
     if (status < 200 || status >= 300) {
-      throw new Error("Groq não respondeu com sucesso (HTTP " + status + ").");
+      // A API pode informar o motivo (por exemplo, modelo indisponível).
+      // Exibe somente a mensagem de erro, sem cabeçalhos, chave ou corpo do e-mail.
+      var motivo = "";
+      try {
+        var falha = JSON.parse(resposta.getContentText());
+        if (falha && falha.error && typeof falha.error.message === "string") {
+          motivo = falha.error.message.trim().slice(0, 350);
+        }
+      } catch (erroResposta) {
+        // Não propaga respostas não estruturadas que possam conter dados sensíveis.
+      }
+      throw new Error("Groq não respondeu com sucesso (HTTP " + status + ")" +
+        (motivo ? ": " + motivo : ".") +
+        (status === 404 ? " Verifique a propriedade GROQ_MODEL e a disponibilidade do modelo." : ""));
     }
     var envelope;
     try { envelope = JSON.parse(resposta.getContentText()); }
