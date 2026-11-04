@@ -38,3 +38,24 @@ contexto.UrlFetchApp.fetch = () => ({
 });
 assert.throws(() => contexto.consultarCepCliente("01001000"), /não encontrado/);
 console.log("OK: CEP válido, inválido e inexistente.");
+
+/** Regressão da interface: hífen no CEP, acentos e UF da cidade. */
+const html = fs.readFileSync("index.html", "utf8");
+const trecho = html.slice(html.indexOf("function normalizarLocalidadeCliente("),
+  html.indexOf("    /**\n     * Cadastro de cliente.", html.indexOf("function normalizarLocalidadeCliente(")));
+const tela = {
+  document: {
+    getElementById: id => id === "cepCliente"
+      ? {value: "01001-000"}
+      : {options: [{value: "", textContent: "Selecione"}, {value: "12", textContent: "São Paulo - SP"}], value: ""}
+  },
+  google: {script: {run: {}}},
+  mostrarMensagem: () => {}
+};
+vm.createContext(tela);
+vm.runInContext(trecho, tela);
+assert.equal(tela.normalizarLocalidadeCliente("São Paulo"), "SAOPAULO");
+assert.equal(tela.selecionarLocalidadeCliente("cidadeCliente", "São Paulo", "SP"), true);
+assert.equal(tela.document.getElementById("cepCliente").value.replace(/\D/g, "").length, 8);
+assert.match(trecho, /replace\(\/\\D\/g/);
+console.log("OK: interface aceita CEP com hífen e cidade com acento.");
