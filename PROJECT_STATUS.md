@@ -125,3 +125,11 @@ Executar testes controlados com mensagens de exemplo e planilha de testes; corri
 - Ao receber HTTP 404 indicando modelo inexistente ou sem acesso, `AgendamentoGroqService.js` consulta `GET /openai/v1/models` usando a chave já armazenada, seleciona uma opção de texto reconhecida e tenta a extração uma única vez. Sem nova chave e sem alterar propriedades do script.
 - Teste de fallback (modelo alternativo) acrescentado a `AgendamentoGroq.test.cjs`. Arquivos alterados: `AgendamentoGroqService.js`, `AgendamentoGroq.test.cjs`, `PROJECT_STATUS.md`. Arquivos criados/excluídos: nenhum. Demais arquivos mantidos.
 - Testar com a execução automatizada; em seguida executar `Ler E-mails com IA` com mensagem controlada. Ainda não houve chamada real com a chave nem gravação real em Sheets nesta etapa.
+
+## Diagnóstico de confirmação por e-mail — 03/11/2026
+- Evidência: importação com IA cadastrou agendamento código 6, mas o retorno informou falha na confirmação. A causa exata não estava disponível na interface.
+- Alterado `AgendamentoService.js` para distinguir falta de autorização MailApp, cota excedida e outras falhas, mantendo o cadastro persistido.
+- Alterado `AgendamentoEmailEnvioService.js`: função manual `autorizarEmailConfirmacaoAgendamento()` consulta a cota MailApp sem enviar e-mail; requer consentimento do proprietário no Apps Script.
+- Alterado `AgendamentoEmailEnvio.test.cjs`: testes isolados para autorização sem envio e erro que não marca confirmação como enviada.
+- Criados: nenhum. Mantidos: interface, repositórios, regras, validadores e integração Groq. Excluídos: nenhum.
+- Como testar: executar testes automatizados; no Apps Script executar manualmente `autorizarEmailConfirmacaoAgendamento` e aprovar permissões; cadastrar novo agendamento controlado e conferir a confirmação. O agendamento 6 não deve ser recriado para repetir o envio.
