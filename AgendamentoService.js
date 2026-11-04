@@ -115,8 +115,18 @@ var AgendamentoService = (function() {
         status: status
       });
     } catch (erroEnvio) {
-      notificacao = "falha no envio da confirmação";
-      console.error("Agendamento " + codigoAgendamento + ": " + erroEnvio.message);
+      // O cadastro permanece salvo. Informamos a categoria da falha sem expor
+      // dados do cliente nem o conteúdo da mensagem.
+      var motivoEnvio = String(erroEnvio && erroEnvio.message || "");
+      if (/authorization|autoriz|permission|permiss|scope|not authorized/i.test(motivoEnvio)) {
+        notificacao = "não enviado: falta autorização do MailApp no Apps Script";
+      } else if (/quota|cota|limit exceeded|too many times/i.test(motivoEnvio)) {
+        notificacao = "não enviado: cota de e-mails excedida";
+      } else {
+        notificacao = "não enviado: verifique o registro de execução do Apps Script";
+      }
+      console.error("Falha de confirmação do agendamento " + codigoAgendamento +
+        ": " + motivoEnvio);
     }
     return "Agendamento cadastrado com sucesso! Código: " +
       codigoAgendamento + ". E-mail: " + notificacao + ".";
