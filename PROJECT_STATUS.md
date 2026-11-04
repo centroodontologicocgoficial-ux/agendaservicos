@@ -151,3 +151,8 @@ Executar testes controlados com mensagens de exemplo e planilha de testes; corri
 - Endereço, cidade e bairro são preenchidos/selecionados somente com dados disponíveis e correspondência cadastrada. CEP de localidade sem rua/bairro exibe orientação para preenchimento manual; número do imóvel sempre manual.
 - Criados: nenhum. Alterados: `index.html`, `ClienteCep.test.cjs`, `PROJECT_STATUS.md`. Mantidos: Services, Rules, Validators, Repositories, demais arquivos. Excluídos: nenhum.
 - Testes: `node ClienteCep.test.cjs` simula interface preenchendo rua/cidade/bairro e CEP sem logradouro. Ainda requer confirmação visual no navegador do usuário; nenhuma planilha foi alterada.
+
+## Botão Buscar CEP na tela de clientes — 03/11/2026
+- Adicionado botão explícito `Buscar CEP`, tipo `button`, ao lado do campo CEP, para consultar mesmo quando a digitação/colagem não dispara o evento esperado. A busca pode ser repetida e mostra o resultado no formulário.
+- Criados: nenhum. Alterados: `index.html`, `ClienteCep.test.cjs`, `PROJECT_STATUS.md`. Mantidos: `ClienteService.js`, `ClienteRepository.js`, `ClienteValidator.js`, `ClienteRules.js` e demais arquivos. Excluídos: nenhum.
+- Testes: executar `node ClienteCep.test.cjs`; no navegador, informar CEP, clicar Buscar CEP e observar mensagem sob o campo. A integração real permanece dependente da resposta do ViaCEP e do navegador.

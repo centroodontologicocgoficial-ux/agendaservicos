@@ -70,7 +70,8 @@ console.log("OK: interface aceita CEP com hífen e cidade com acento.");
     enderecoCliente: {value: ""},
     cidadeCliente: {value: "", options: [{value:"",textContent:"Selecione"}, {value:"5",textContent:"São Paulo - SP"}]},
     bairroCliente: {value: "", options: [{value:"",textContent:"Selecione"}, {value:"7",textContent:"Sé"}]},
-    situacaoCepCliente: {textContent: ""}
+    situacaoCepCliente: {textContent: ""},
+    btnBuscarCepCliente: {disabled: false}
   };
   let resolver;
   const telaReal = {
@@ -83,12 +84,14 @@ console.log("OK: interface aceita CEP com hífen e cidade com acento.");
   };
   vm.createContext(telaReal);
   vm.runInContext(htmlAtual.slice(inicio, fim), telaReal);
-  telaReal.consultarCepClienteTela();
+  assert.match(htmlAtual, /id="btnBuscarCepCliente"/);
+  telaReal.consultarCepClienteTela(true);
   await new Promise(resolve => setImmediate(resolve));
   assert.equal(campos.enderecoCliente.value, "Praça da Sé");
   assert.equal(campos.cidadeCliente.value, "5");
   assert.equal(campos.bairroCliente.value, "7");
   assert.match(campos.situacaoCepCliente.textContent, /Endereço preenchido/);
+  assert.equal(campos.btnBuscarCepCliente.disabled, false);
   campos.cepCliente.value = "79140-000";
   telaReal.fetch = () => Promise.resolve({ok:true,json:() => Promise.resolve({
     cep:"79140-000",logradouro:"",bairro:"",localidade:"Terenos",uf:"MS"
