@@ -120,3 +120,8 @@ Executar testes controlados com mensagens de exemplo e planilha de testes; corri
 - Alterado `AgendamentoGroq.test.cjs`: teste isolado do diagnóstico HTTP 404 sem vazamento da chave.
 - Criados: nenhum. Mantidos: interface, repositórios, regras, validadores, serviços de e-mail e demais fontes. Excluídos: nenhum.
 - Como testar: executar testes automatizados; depois clicar em `Ler E-mails com IA` e observar a mensagem retornada. Não foi realizada chamada real com a chave Groq nem gravação em Sheets nesta etapa.
+
+## Correção automática de modelo Groq — 03/11/2026
+- Ao receber HTTP 404 indicando modelo inexistente ou sem acesso, `AgendamentoGroqService.js` consulta `GET /openai/v1/models` usando a chave já armazenada, seleciona uma opção de texto reconhecida e tenta a extração uma única vez. Sem nova chave e sem alterar propriedades do script.
+- Teste de fallback (modelo alternativo) acrescentado a `AgendamentoGroq.test.cjs`. Arquivos alterados: `AgendamentoGroqService.js`, `AgendamentoGroq.test.cjs`, `PROJECT_STATUS.md`. Arquivos criados/excluídos: nenhum. Demais arquivos mantidos.
+- Testar com a execução automatizada; em seguida executar `Ler E-mails com IA` com mensagem controlada. Ainda não houve chamada real com a chave nem gravação real em Sheets nesta etapa.
