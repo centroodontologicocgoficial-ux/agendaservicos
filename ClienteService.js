@@ -66,8 +66,8 @@ var ClienteService = (function() {
    * @throws {Error} CEP inválido, não encontrado ou falha de comunicação.
    */
   function consultarCep(cep) {
-    var digitos = String(cep || "").replace(/\\D/g, "");
-    if (!/^\\d{8}$/.test(digitos)) {
+    var digitos = String(cep || "").replace(/\D/g, "");
+    if (!/^\d{8}$/.test(digitos)) {
       throw new Error("Informe um CEP com 8 números.");
     }
     var resposta = UrlFetchApp.fetch("https://viacep.com.br/ws/" + digitos + "/json/", {
