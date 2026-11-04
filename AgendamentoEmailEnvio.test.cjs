@@ -64,3 +64,18 @@ const lembretes = contexto.verificarLembretesAgendamento();
 assert.equal(lembretes.enviados, 0);
 assert.equal(envios.length, 1);
 console.log('OK: confirmação única, ativação segura, e-mail antigo ignorado e cancelamento respeitado.');
+
+/** Autorizar MailApp apenas consulta a cota, sem enviar e-mails. */
+contexto.MailApp.getRemainingDailyQuota = () => 42;
+const enviadosAntes = envios.length;
+assert.equal(contexto.autorizarEmailConfirmacaoAgendamento(), 42);
+assert.equal(envios.length, enviadosAntes);
+
+/** Falha de autorização não marca confirmação como enviada. */
+contexto.MailApp.sendEmail = () => { throw new Error('Authorization is required to perform that action'); };
+assert.throws(
+  () => contexto.AgendamentoEmailEnvioService.confirmar({...base, codigo: '8'}),
+  /Authorization is required/
+);
+assert.equal(estado.has('agenda_confirmacao_8'), false);
+console.log('OK: autorização sem envio e falha sem marcar confirmação.');
