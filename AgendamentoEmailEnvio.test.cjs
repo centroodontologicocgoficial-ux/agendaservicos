@@ -17,7 +17,7 @@ let registros = [];
 let mensagens = [];
 let cadastros = 0;
 const contexto = {
-  console, Date, Number, String, Error, Object, Array, RegExp, isFinite,
+  console, Logger: {log: () => {}}, Date, Number, String, Error, Object, Array, RegExp, isFinite,
   MailApp: {sendEmail: msg => envios.push(msg)},
   PropertiesService: {getScriptProperties: () => propriedades},
   LockService: {getScriptLock: () => ({tryLock: () => true, releaseLock: () => {}})},
