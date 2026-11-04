@@ -65,3 +65,28 @@ assert.throws(
 );
 contexto.UrlFetchApp.fetch = respostaOriginal;
 console.log('OK: erro HTTP 404 apresenta motivo sem revelar a chave.');
+
+/** Em HTTP 404 por modelo, busca opções da própria conta e tenta uma vez. */
+let consultas = [];
+contexto.UrlFetchApp.fetch = (url, options) => {
+  if (url.endsWith('/models')) {
+    consultas.push('models');
+    return {getResponseCode: () => 200, getContentText: () =>
+      JSON.stringify({data: [{id: 'llama-3.1-8b-instant', active: true}]})};
+  }
+  const modelo = JSON.parse(options.payload).model;
+  consultas.push(modelo);
+  if (modelo === 'llama-3.3-70b-versatile') {
+    return {getResponseCode: () => 404, getContentText: () =>
+      JSON.stringify({error: {message: 'model not found'}})};
+  }
+  return {getResponseCode: () => 200, getContentText: () =>
+    JSON.stringify({choices: [{message: {content: JSON.stringify({
+      cliente: 'Ana', servico: 'Corte', profissional: 'Bia',
+      data: '2026-11-10', hora: '14:00'
+    })}}]})};
+};
+const extraido = contexto.AgendamentoGroqService.extrairAgendamento('Solicitação de teste');
+assert.equal(extraido.cliente, 'Ana');
+assert.deepEqual(consultas, ['llama-3.3-70b-versatile', 'models', 'llama-3.1-8b-instant']);
+console.log('OK: modelo indisponível substituído por modelo listado na conta.');
