@@ -431,7 +431,8 @@
             <div>
               <label for="cepCliente">CEP</label>
               <input type="text" id="cepCliente" maxlength="9"
-                placeholder="00000-000" oninput="consultarCepClienteTela()" required>
+                placeholder="00000-000" inputmode="numeric" oninput="consultarCepClienteTela()" onblur="consultarCepClienteTela()" required>
+              <div id="situacaoCepCliente" role="status" aria-live="polite" style="font-size:12px;margin-top:5px;"></div>
             </div>
 
             <div>
@@ -1072,38 +1073,93 @@
      */
     var ultimaConsultaCepCliente = "";
     var sequenciaConsultaCepCliente = 0;
+
+    /**
+     * Apresenta o resultado ao lado do CEP, inclusive quando a rua não
+     * é fornecida pela API. Não interfere nas mensagens de cadastro.
+     * @param {string} mensagem Texto a exibir.
+     */
+    function informarSituacaoCepCliente(mensagem) {
+      document.getElementById("situacaoCepCliente").textContent = mensagem;
+    }
+
+    /**
+     * Aplica os dados retornados apenas quando pertencem ao CEP atual.
+     * Cidades e bairros somente são selecionados quando cadastrados.
+     * @param {Object} dados Endereço devolvido pelo ViaCEP.
+     * @param {string} cep CEP consultado sem pontuação.
+     * @param {number} sequencia Identificador da consulta.
+     */
+    function aplicarResultadoCepCliente(dados, cep, sequencia) {
+      if (sequencia !== sequenciaConsultaCepCliente ||
+          document.getElementById("cepCliente").value.replace(/\D/g, "") !== cep) return;
+      if (!dados || dados.erro || !dados.cep) {
+        ultimaConsultaCepCliente = "";
+        informarSituacaoCepCliente("CEP não encontrado. Confira os números.");
+        return;
+      }
+      document.getElementById("enderecoCliente").value = dados.endereco || dados.logradouro || "";
+      var nomeCidade = dados.cidade || dados.localidade || "";
+      var nomeBairro = dados.bairro || "";
+      var cidade = selecionarLocalidadeCliente("cidadeCliente", nomeCidade, dados.uf || "");
+      var bairro = selecionarLocalidadeCliente("bairroCliente", nomeBairro, "");
+      var pendencias = [];
+      if (!document.getElementById("enderecoCliente").value) {
+        pendencias.push("este CEP não informa a rua; preencha o endereço");
+      }
+      if (!cidade) pendencias.push("selecione a cidade cadastrada (" + nomeCidade + ")");
+      if (!nomeBairro) pendencias.push("este CEP não informa o bairro; selecione manualmente");
+      else if (!bairro) pendencias.push("selecione o bairro cadastrado (" + nomeBairro + ")");
+      informarSituacaoCepCliente(pendencias.length
+        ? "CEP localizado. " + pendencias.join("; ") + "."
+        : "Endereço preenchido. Informe o número do imóvel.");
+    }
+
+    /**
+     * Consulta diretamente o ViaCEP no navegador, com alternativa pelo
+     * Apps Script quando o navegador bloquear o acesso externo.
+     * O campo número permanece sempre manual.
+     */
     function consultarCepClienteTela() {
       var cep = document.getElementById("cepCliente").value.replace(/\D/g, "");
       if (cep.length !== 8) {
         ultimaConsultaCepCliente = "";
         sequenciaConsultaCepCliente++;
+        informarSituacaoCepCliente(cep.length ? "Digite os 8 números do CEP." : "");
         return;
       }
       if (cep === ultimaConsultaCepCliente) return;
       ultimaConsultaCepCliente = cep;
       var sequencia = ++sequenciaConsultaCepCliente;
-      mostrarMensagem("mensagemCliente", "Consultando CEP...", "");
-      google.script.run
-        .withSuccessHandler(function(dados) {
-          if (sequencia !== sequenciaConsultaCepCliente ||
-              document.getElementById("cepCliente").value.replace(/\D/g, "") !== cep) return;
-          if (dados.endereco) document.getElementById("enderecoCliente").value = dados.endereco;
-          var cidade = selecionarLocalidadeCliente("cidadeCliente", dados.cidade, dados.uf);
-          var bairro = selecionarLocalidadeCliente("bairroCliente", dados.bairro, "");
-          var avisos = [];
-          if (!dados.endereco) avisos.push("informe o endereço");
-          if (!cidade) avisos.push("selecione a cidade cadastrada");
-          if (!bairro) avisos.push("selecione o bairro cadastrado");
-          mostrarMensagem("mensagemCliente",
-            avisos.length ? "CEP localizado; " + avisos.join("; ") + "." :
-              "Endereço localizado. Informe o número do imóvel.", "sucesso");
+      informarSituacaoCepCliente("Consultando CEP...");
+      function alternativaAppsScript() {
+        google.script.run
+          .withSuccessHandler(function(dados) {
+            aplicarResultadoCepCliente(dados, cep, sequencia);
+          })
+          .withFailureHandler(function(erro) {
+            if (sequencia !== sequenciaConsultaCepCliente) return;
+            ultimaConsultaCepCliente = "";
+            informarSituacaoCepCliente("Não foi possível consultar o CEP: " +
+              (erro && erro.message ? erro.message : "falha de conexão") + ".");
+          })
+          .consultarCepCliente(cep);
+      }
+      if (typeof fetch !== "function") {
+        alternativaAppsScript();
+        return;
+      }
+      fetch("https://viacep.com.br/ws/" + cep + "/json/")
+        .then(function(resposta) {
+          if (!resposta.ok) throw new Error("ViaCEP indisponível");
+          return resposta.json();
         })
-        .withFailureHandler(function(erro) {
-          if (sequencia !== sequenciaConsultaCepCliente) return;
-          ultimaConsultaCepCliente = "";
-          mostrarMensagem("mensagemCliente", erro.message, "erro");
+        .then(function(dados) {
+          aplicarResultadoCepCliente(dados, cep, sequencia);
         })
-        .consultarCepCliente(cep);
+        .catch(function() {
+          if (sequencia === sequenciaConsultaCepCliente) alternativaAppsScript();
+        });
     }
 
     /**

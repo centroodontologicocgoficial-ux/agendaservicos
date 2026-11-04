@@ -145,3 +145,9 @@ Executar testes controlados com mensagens de exemplo e planilha de testes; corri
 - Corrigidas somente as expressões do fluxo Cliente em `index.html` e ampliado `ClienteCep.test.cjs` para testar CEP com hífen e cidade acentuada.
 - Criados: nenhum. Alterados: `index.html`, `ClienteCep.test.cjs`, `PROJECT_STATUS.md`. Mantidos: `ClienteService.js`, `ClienteRepository.js`, `ClienteValidator.js`, `ClienteRules.js`, demais arquivos. Excluídos: nenhum.
 - Como testar: executar o fluxo automatizado e, na aplicação publicada, informar `01001-000`; verificar endereço e seleção de cidade/bairro quando cadastrados. Nenhum cliente de teste foi salvo.
+
+## ViaCEP — retorno visível na tela e consulta alternativa (03/11/2026)
+- O CEP digitado agora exibe status diretamente sob o campo. A consulta tenta ViaCEP diretamente pelo navegador e usa `google.script.run` como alternativa quando a conexão externa falha.
+- Endereço, cidade e bairro são preenchidos/selecionados somente com dados disponíveis e correspondência cadastrada. CEP de localidade sem rua/bairro exibe orientação para preenchimento manual; número do imóvel sempre manual.
+- Criados: nenhum. Alterados: `index.html`, `ClienteCep.test.cjs`, `PROJECT_STATUS.md`. Mantidos: Services, Rules, Validators, Repositories, demais arquivos. Excluídos: nenhum.
+- Testes: `node ClienteCep.test.cjs` simula interface preenchendo rua/cidade/bairro e CEP sem logradouro. Ainda requer confirmação visual no navegador do usuário; nenhuma planilha foi alterada.

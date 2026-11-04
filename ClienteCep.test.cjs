@@ -59,3 +59,42 @@ assert.equal(tela.selecionarLocalidadeCliente("cidadeCliente", "São Paulo", "SP
 assert.equal(tela.document.getElementById("cepCliente").value.replace(/\D/g, "").length, 8);
 assert.match(trecho, /replace\(\/\\D\/g/);
 console.log("OK: interface aceita CEP com hífen e cidade com acento.");
+
+/** Simula o navegador para verificar o fluxo de CEP até o campo endereço. */
+(async function testarFormularioCep() {
+  const htmlAtual = fs.readFileSync("index.html", "utf8");
+  const inicio = htmlAtual.indexOf("function normalizarLocalidadeCliente(");
+  const fim = htmlAtual.indexOf("    /**\n     * Cadastro de cliente.", inicio);
+  const campos = {
+    cepCliente: {value: "01001-000"},
+    enderecoCliente: {value: ""},
+    cidadeCliente: {value: "", options: [{value:"",textContent:"Selecione"}, {value:"5",textContent:"São Paulo - SP"}]},
+    bairroCliente: {value: "", options: [{value:"",textContent:"Selecione"}, {value:"7",textContent:"Sé"}]},
+    situacaoCepCliente: {textContent: ""}
+  };
+  let resolver;
+  const telaReal = {
+    document: {getElementById: id => campos[id]},
+    fetch: () => Promise.resolve({ok:true,json:() => Promise.resolve({
+      cep:"01001-000",logradouro:"Praça da Sé",bairro:"Sé",localidade:"São Paulo",uf:"SP"
+    })}),
+    google: {script:{run:{}}},
+    mostrarMensagem: () => {}
+  };
+  vm.createContext(telaReal);
+  vm.runInContext(htmlAtual.slice(inicio, fim), telaReal);
+  telaReal.consultarCepClienteTela();
+  await new Promise(resolve => setImmediate(resolve));
+  assert.equal(campos.enderecoCliente.value, "Praça da Sé");
+  assert.equal(campos.cidadeCliente.value, "5");
+  assert.equal(campos.bairroCliente.value, "7");
+  assert.match(campos.situacaoCepCliente.textContent, /Endereço preenchido/);
+  campos.cepCliente.value = "79140-000";
+  telaReal.fetch = () => Promise.resolve({ok:true,json:() => Promise.resolve({
+    cep:"79140-000",logradouro:"",bairro:"",localidade:"Terenos",uf:"MS"
+  })});
+  telaReal.consultarCepClienteTela();
+  await new Promise(resolve => setImmediate(resolve));
+  assert.match(campos.situacaoCepCliente.textContent, /não informa a rua/);
+  console.log("OK: interface preenche rua, cidade e bairro; CEP sem rua exibe aviso.");
+})().catch(erro => {console.error(erro); process.exitCode = 1;});
