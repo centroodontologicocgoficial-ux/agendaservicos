@@ -166,3 +166,16 @@ var AgendamentoEmailEnvioService = (function () {
 function verificarLembretesAgendamento() {
   return AgendamentoEmailEnvioService.verificarLembretes();
 }
+
+/**
+ * Solicita a autorização do MailApp sem enviar nenhuma mensagem.
+ * Execute manualmente no editor do Apps Script com a conta da implantação.
+ * A autorização deve ser aprovada pelo proprietário da conta Google.
+ *
+ * @return {number} Quantidade restante de destinatários permitidos hoje.
+ */
+function autorizarEmailConfirmacaoAgendamento() {
+  var restante = MailApp.getRemainingDailyQuota();
+  Logger.log("MailApp disponível. Cota restante de destinatários: " + restante);
+  return restante;
+}
