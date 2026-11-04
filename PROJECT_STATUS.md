@@ -133,3 +133,9 @@ Executar testes controlados com mensagens de exemplo e planilha de testes; corri
 - Alterado `AgendamentoEmailEnvio.test.cjs`: testes isolados para autorização sem envio e erro que não marca confirmação como enviada.
 - Criados: nenhum. Mantidos: interface, repositórios, regras, validadores e integração Groq. Excluídos: nenhum.
 - Como testar: executar testes automatizados; no Apps Script executar manualmente `autorizarEmailConfirmacaoAgendamento` e aprovar permissões; cadastrar novo agendamento controlado e conferir a confirmação. O agendamento 6 não deve ser recriado para repetir o envio.
+
+## Autopreenchimento de endereço pelo ViaCEP — 03/11/2026
+- Na tela de Cliente, após digitar 8 números do CEP, a interface chama `consultarCepCliente()` no `ClienteService.js`, que consulta `https://viacep.com.br/ws/{CEP}/json/` com `UrlFetchApp` e devolve dados públicos do endereço.
+- O campo endereço é preenchido quando retornado; cidade e bairro são selecionados somente se houver correspondência única com opções já cadastradas. Não cria cidade, bairro ou cliente; número permanece manual. CEP inválido/inexistente ou falha da API exibe aviso.
+- Arquivos criados: `ClienteCep.test.cjs`. Alterados: `ClienteService.js`, `index.html`, `.github/workflows/agendamento-tests.yml`, `PROJECT_STATUS.md`. Mantidos: `ClienteRepository.js`, `ClienteValidator.js`, `ClienteRules.js`, demais arquivos e `PROJECT_GUIDE.md`. Excluídos: nenhum.
+- Testes: executar `node ClienteCep.test.cjs` e fluxo de CI; testar no formulário CEP existente, inexistente, cidade/bairro não cadastrados e preenchimento manual. Sem gravação real de cliente nesta etapa.
