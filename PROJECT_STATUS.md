@@ -139,3 +139,9 @@ Executar testes controlados com mensagens de exemplo e planilha de testes; corri
 - O campo endereço é preenchido quando retornado; cidade e bairro são selecionados somente se houver correspondência única com opções já cadastradas. Não cria cidade, bairro ou cliente; número permanece manual. CEP inválido/inexistente ou falha da API exibe aviso.
 - Arquivos criados: `ClienteCep.test.cjs`. Alterados: `ClienteService.js`, `index.html`, `.github/workflows/agendamento-tests.yml`, `PROJECT_STATUS.md`. Mantidos: `ClienteRepository.js`, `ClienteValidator.js`, `ClienteRules.js`, demais arquivos e `PROJECT_GUIDE.md`. Excluídos: nenhum.
 - Testes: executar `node ClienteCep.test.cjs` e fluxo de CI; testar no formulário CEP existente, inexistente, cidade/bairro não cadastrados e preenchimento manual. Sem gravação real de cliente nesta etapa.
+
+## Correção da consulta ViaCEP na interface — 03/11/2026
+- Identificado defeito em `index.html`: expressões regulares tinham barras invertidas duplicadas e não removiam o hífen do CEP nem separavam corretamente a cidade/UF, impedindo a busca e seleção automática.
+- Corrigidas somente as expressões do fluxo Cliente em `index.html` e ampliado `ClienteCep.test.cjs` para testar CEP com hífen e cidade acentuada.
+- Criados: nenhum. Alterados: `index.html`, `ClienteCep.test.cjs`, `PROJECT_STATUS.md`. Mantidos: `ClienteService.js`, `ClienteRepository.js`, `ClienteValidator.js`, `ClienteRules.js`, demais arquivos. Excluídos: nenhum.
+- Como testar: executar o fluxo automatizado e, na aplicação publicada, informar `01001-000`; verificar endereço e seleção de cidade/bairro quando cadastrados. Nenhum cliente de teste foi salvo.
