@@ -432,6 +432,7 @@
               <label for="cepCliente">CEP</label>
               <input type="text" id="cepCliente" maxlength="9"
                 placeholder="00000-000" inputmode="numeric" oninput="consultarCepClienteTela()" onblur="consultarCepClienteTela()" required>
+              <button type="button" id="btnBuscarCepCliente" onclick="consultarCepClienteTela(true)" style="margin-top:7px;">Buscar CEP</button>
               <div id="situacaoCepCliente" role="status" aria-live="polite" style="font-size:12px;margin-top:5px;"></div>
             </div>
 
@@ -1081,6 +1082,7 @@
      */
     function informarSituacaoCepCliente(mensagem) {
       document.getElementById("situacaoCepCliente").textContent = mensagem;
+      document.getElementById("btnBuscarCepCliente").disabled = mensagem === "Consultando CEP...";
     }
 
     /**
@@ -1120,7 +1122,7 @@
      * Apps Script quando o navegador bloquear o acesso externo.
      * O campo número permanece sempre manual.
      */
-    function consultarCepClienteTela() {
+    function consultarCepClienteTela(forcarConsulta) {
       var cep = document.getElementById("cepCliente").value.replace(/\D/g, "");
       if (cep.length !== 8) {
         ultimaConsultaCepCliente = "";
@@ -1128,10 +1130,12 @@
         informarSituacaoCepCliente(cep.length ? "Digite os 8 números do CEP." : "");
         return;
       }
-      if (cep === ultimaConsultaCepCliente) return;
+      if (cep === ultimaConsultaCepCliente && !forcarConsulta) return;
       ultimaConsultaCepCliente = cep;
       var sequencia = ++sequenciaConsultaCepCliente;
       informarSituacaoCepCliente("Consultando CEP...");
+      var botaoBusca = document.getElementById("btnBuscarCepCliente");
+      botaoBusca.disabled = true;
       function alternativaAppsScript() {
         google.script.run
           .withSuccessHandler(function(dados) {
