@@ -431,7 +431,7 @@
             <div>
               <label for="cepCliente">CEP</label>
               <input type="text" id="cepCliente" maxlength="9"
-                placeholder="00000-000" required>
+                placeholder="00000-000" oninput="consultarCepClienteTela()" required>
             </div>
 
             <div>
@@ -1025,6 +1025,85 @@
           botao.textContent = "Cadastrar bairro";
         })
         .cadastrarBairro(nome);
+    }
+
+    /**
+     * Normaliza nomes para comparar os dados do ViaCEP com as opções cadastradas.
+     * @param {string} texto Nome da cidade, bairro ou UF.
+     * @return {string} Texto comparável, sem acentos e pontuação.
+     */
+    function normalizarLocalidadeCliente(texto) {
+      return String(texto || "").normalize("NFD")
+        .replace(/[\\u0300-\\u036f]/g, "").toUpperCase()
+        .replace(/[^A-Z0-9]/g, "");
+    }
+
+    /**
+     * Seleciona uma opção cadastrada sem criar novos registros.
+     * @param {string} id Identificador da lista suspensa.
+     * @param {string} nome Nome retornado pelo ViaCEP.
+     * @param {string} uf Sigla da unidade federativa (somente cidade).
+     * @return {boolean} Se foi encontrada correspondência única.
+     */
+    function selecionarLocalidadeCliente(id, nome, uf) {
+      var select = document.getElementById(id);
+      var procurado = normalizarLocalidadeCliente(nome);
+      if (!procurado) return false;
+      var correspondencias = Array.from(select.options).filter(function(opcao) {
+        if (!opcao.value) return false;
+        var texto = opcao.textContent;
+        if (id === "cidadeCliente") {
+          var partes = texto.split(/\\s+-\\s+/);
+          return normalizarLocalidadeCliente(partes[0]) === procurado &&
+            (!uf || partes.length < 2 ||
+              normalizarLocalidadeCliente(partes[partes.length - 1]) ===
+                normalizarLocalidadeCliente(uf));
+        }
+        return normalizarLocalidadeCliente(texto) === procurado;
+      });
+      if (correspondencias.length !== 1) return false;
+      select.value = correspondencias[0].value;
+      return true;
+    }
+
+    /**
+     * Busca o CEP automaticamente ao completar oito dígitos.
+     * Não salva o cliente e preserva a seleção manual de cidade/bairro.
+     */
+    var ultimaConsultaCepCliente = "";
+    var sequenciaConsultaCepCliente = 0;
+    function consultarCepClienteTela() {
+      var cep = document.getElementById("cepCliente").value.replace(/\\D/g, "");
+      if (cep.length !== 8) {
+        ultimaConsultaCepCliente = "";
+        sequenciaConsultaCepCliente++;
+        return;
+      }
+      if (cep === ultimaConsultaCepCliente) return;
+      ultimaConsultaCepCliente = cep;
+      var sequencia = ++sequenciaConsultaCepCliente;
+      mostrarMensagem("mensagemCliente", "Consultando CEP...", "");
+      google.script.run
+        .withSuccessHandler(function(dados) {
+          if (sequencia !== sequenciaConsultaCepCliente ||
+              document.getElementById("cepCliente").value.replace(/\\D/g, "") !== cep) return;
+          if (dados.endereco) document.getElementById("enderecoCliente").value = dados.endereco;
+          var cidade = selecionarLocalidadeCliente("cidadeCliente", dados.cidade, dados.uf);
+          var bairro = selecionarLocalidadeCliente("bairroCliente", dados.bairro, "");
+          var avisos = [];
+          if (!dados.endereco) avisos.push("informe o endereço");
+          if (!cidade) avisos.push("selecione a cidade cadastrada");
+          if (!bairro) avisos.push("selecione o bairro cadastrado");
+          mostrarMensagem("mensagemCliente",
+            avisos.length ? "CEP localizado; " + avisos.join("; ") + "." :
+              "Endereço localizado. Informe o número do imóvel.", "sucesso");
+        })
+        .withFailureHandler(function(erro) {
+          if (sequencia !== sequenciaConsultaCepCliente) return;
+          ultimaConsultaCepCliente = "";
+          mostrarMensagem("mensagemCliente", erro.message, "erro");
+        })
+        .consultarCepCliente(cep);
     }
 
     /**

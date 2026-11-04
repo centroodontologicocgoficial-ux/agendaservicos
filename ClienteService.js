@@ -58,6 +58,40 @@ var ClienteService = (function() {
   }
 
 
+  /**
+   * Consulta o endereço público associado a um CEP no ViaCEP.
+   * Não grava dados e não altera cadastros de cidades ou bairros.
+   * @param {string} cep CEP informado no formulário.
+   * @return {Object} Logradouro, bairro, localidade, UF e CEP normalizado.
+   * @throws {Error} CEP inválido, não encontrado ou falha de comunicação.
+   */
+  function consultarCep(cep) {
+    var digitos = String(cep || "").replace(/\D/g, "");
+    if (!/^\d{8}$/.test(digitos)) {
+      throw new Error("Informe um CEP com 8 números.");
+    }
+    var resposta = UrlFetchApp.fetch("https://viacep.com.br/ws/" + digitos + "/json/", {
+      muteHttpExceptions: true,
+      followRedirects: false
+    });
+    if (resposta.getResponseCode() !== 200) {
+      throw new Error("Não foi possível consultar o ViaCEP. Tente novamente.");
+    }
+    var dados;
+    try { dados = JSON.parse(resposta.getContentText()); }
+    catch (erro) { throw new Error("Resposta inválida do ViaCEP."); }
+    if (!dados || dados.erro === true || !dados.cep) {
+      throw new Error("CEP não encontrado no ViaCEP.");
+    }
+    return {
+      cep: String(dados.cep),
+      endereco: String(dados.logradouro || ""),
+      bairro: String(dados.bairro || ""),
+      cidade: String(dados.localidade || ""),
+      uf: String(dados.uf || "")
+    };
+  }
+
   /** Lista os registros cadastrados para a grade da interface. @return {Object[]} */
   function listarParaGrade() {
     return ClienteRepository.listarParaGrade();
@@ -66,7 +100,8 @@ var ClienteService = (function() {
     listarParaGrade: listarParaGrade,
     listarCidades: listarCidades,
     listarBairros: listarBairros,
-    cadastrar: cadastrar
+    cadastrar: cadastrar,
+    consultarCep: consultarCep
   };
 
 })();
@@ -111,4 +146,13 @@ function cadastrarCliente(dados) {
 /** Consulta pública usada pela grade do cadastro de Cliente. @return {Object[]} */
 function listarClienteGrade() {
   return ClienteService.listarParaGrade();
+}
+
+/**
+ * Ponto de entrada para consulta do CEP no formulário de clientes.
+ * @param {string} cep CEP informado.
+ * @return {Object} Endereço público retornado pelo ViaCEP.
+ */
+function consultarCepCliente(cep) {
+  return ClienteService.consultarCep(cep);
 }
