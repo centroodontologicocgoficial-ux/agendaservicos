@@ -1034,7 +1034,7 @@
      */
     function normalizarLocalidadeCliente(texto) {
       return String(texto || "").normalize("NFD")
-        .replace(/[\\u0300-\\u036f]/g, "").toUpperCase()
+        .replace(/[\u0300-\u036f]/g, "").toUpperCase()
         .replace(/[^A-Z0-9]/g, "");
     }
 
@@ -1053,7 +1053,7 @@
         if (!opcao.value) return false;
         var texto = opcao.textContent;
         if (id === "cidadeCliente") {
-          var partes = texto.split(/\\s+-\\s+/);
+          var partes = texto.split(/\s+-\s+/);
           return normalizarLocalidadeCliente(partes[0]) === procurado &&
             (!uf || partes.length < 2 ||
               normalizarLocalidadeCliente(partes[partes.length - 1]) ===
@@ -1073,7 +1073,7 @@
     var ultimaConsultaCepCliente = "";
     var sequenciaConsultaCepCliente = 0;
     function consultarCepClienteTela() {
-      var cep = document.getElementById("cepCliente").value.replace(/\\D/g, "");
+      var cep = document.getElementById("cepCliente").value.replace(/\D/g, "");
       if (cep.length !== 8) {
         ultimaConsultaCepCliente = "";
         sequenciaConsultaCepCliente++;
@@ -1086,7 +1086,7 @@
       google.script.run
         .withSuccessHandler(function(dados) {
           if (sequencia !== sequenciaConsultaCepCliente ||
-              document.getElementById("cepCliente").value.replace(/\\D/g, "") !== cep) return;
+              document.getElementById("cepCliente").value.replace(/\D/g, "") !== cep) return;
           if (dados.endereco) document.getElementById("enderecoCliente").value = dados.endereco;
           var cidade = selecionarLocalidadeCliente("cidadeCliente", dados.cidade, dados.uf);
           var bairro = selecionarLocalidadeCliente("bairroCliente", dados.bairro, "");
