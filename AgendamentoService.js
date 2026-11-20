@@ -100,7 +100,30 @@ var AgendamentoService = (function() {
       status: status
     };
 
-    var codigoAgendamento = AgendamentoRepository.salvar(agendamento);
+    // A trava abrange a leitura da agenda, a validação de disponibilidade
+    // e a gravação. Assim, duas solicitações simultâneas não reservam
+    // o mesmo horário nem calculam o mesmo próximo código.
+    var travaCadastro = LockService.getScriptLock();
+    if (!travaCadastro.tryLock(30000)) {
+      throw new Error("A agenda está ocupada. Tente cadastrar novamente.");
+    }
+
+    var codigoAgendamento;
+    try {
+      AgendamentoRules.validarDisponibilidadeEmail(
+        {
+          data: dataTexto,
+          hora: horaTexto,
+          codigo_funcionario: codigoFuncionario
+        },
+        servico,
+        AgendamentoRepository.listarParaConflito(),
+        AgendamentoRepository.listarServicos()
+      );
+      codigoAgendamento = AgendamentoRepository.salvar(agendamento);
+    } finally {
+      travaCadastro.releaseLock();
+    }
 
     // O registro já foi persistido: falha no e-mail não desfaz o cadastro.
     var notificacao = "";
