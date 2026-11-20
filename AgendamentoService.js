@@ -136,10 +136,34 @@ var AgendamentoService = (function() {
 
   /** Lista os registros cadastrados para a grade da interface. @return {Object[]} */
   function listarParaGrade() {
-    return AgendamentoRepository.listarParaGrade();
+    var registros = AgendamentoRepository.listarParaGrade();
+    return registros.map(function (registro) {
+      var copia = Object.assign({}, registro);
+      var previsao = registro.status === "AGENDADO"
+        ? AgendamentoKnnRules.prever(registro, registros) : null;
+      copia.previsaoFalta = registro.status === "AGENDADO"
+        ? (previsao === null ? "Dados insuficientes" : previsao + "% (experimental)")
+        : "";
+      return copia;
+    });
+  }
+
+  /**
+   * Atualiza as previsões da coluna I somente por solicitação explícita.
+   * @return {string} Resultado da atualização.
+   */
+  function atualizarPrevisoesFalta() {
+    var registros = listarParaGrade();
+    var previsoes = {};
+    registros.forEach(function (registro) {
+      previsoes[String(registro.codigo)] = registro.previsaoFalta;
+    });
+    var total = AgendamentoRepository.salvarPrevisoesFalta(previsoes);
+    return total + " previsão(ões) atualizada(s) na coluna I.";
   }
   return {
     listarParaGrade: listarParaGrade,
+    atualizarPrevisoesFalta: atualizarPrevisoesFalta,
     listarFuncionarios: listarFuncionarios,
     listarClientes: listarClientes,
     listarServicos: listarServicos,
@@ -201,4 +225,9 @@ function cadastrarAgendamento(dados) {
 /** Consulta pública usada pela grade do cadastro de Agendamento. @return {Object[]} */
 function listarAgendamentoGrade() {
   return AgendamentoService.listarParaGrade();
+}
+
+/** Ponto de entrada: atualiza a coluna I com estimativas experimentais KNN. */
+function atualizarPrevisoesFaltaAgenda() {
+  return AgendamentoService.atualizarPrevisoesFalta();
 }
