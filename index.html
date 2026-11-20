@@ -564,6 +564,8 @@
         <h3>Dados cadastrados</h3>
         <label for="filtroGradeAgendamento">Pesquisar registros</label>
         <input class="grade-filtro" id="filtroGradeAgendamento" type="search" placeholder="Pesquisar na lista" oninput="filtrarGradeCadastro(Agendamento)">
+        <button type="button" class="botao-principal" onclick="atualizarPrevisoesFaltaTela()" style="margin-bottom:10px;">Atualizar previsões KNN (experimental)</button>
+        <div id="mensagemPrevisaoFalta" class="mensagem" aria-live="polite"></div>
         <div class="grade-cadastro" id="gradeAgendamento" aria-live="polite">Carregando registros...</div>
       </div>
     </section>
@@ -577,7 +579,19 @@
 
     /** Registros consultados por entidade, usados apenas para filtro local. */
     var registrosGradeCadastro = {};
-    var colunasGradeCadastro = {"Funcionario": {"keys": ["codigo", "nome"], "headers": ["Código", "Nome"]}, "Servico": {"keys": ["codigo", "nome", "valor", "tempo"], "headers": ["Código", "Nome", "Valor", "Tempo (min)"]}, "Cidade": {"keys": ["codigo", "nome", "estado"], "headers": ["Código", "Nome", "Estado"]}, "Bairro": {"keys": ["codigo", "nome"], "headers": ["Código", "Nome"]}, "Cliente": {"keys": ["codigo", "nome", "cpf", "dt_aniversario", "endereco", "numero", "codigo_cidade", "codigo_bairro", "cep", "celular", "email", "status_financeiro"], "headers": ["Código", "Nome", "CPF", "Nascimento", "Endereço", "Número", "Cidade (cód.)", "Bairro (cód.)", "CEP", "Celular", "E-mail", "Status financeiro"]}, "Agendamento": {"keys": ["codigo", "data", "hora", "codigoFuncionario", "codigoCliente", "codigoServico", "valor", "status"], "headers": ["Código", "Data", "Hora", "Funcionário", "Cliente", "Serviço", "Valor", "Status"]}};
+    var colunasGradeCadastro = {"Funcionario": {"keys": ["codigo", "nome"], "headers": ["Código", "Nome"]}, "Servico": {"keys": ["codigo", "nome", "valor", "tempo"], "headers": ["Código", "Nome", "Valor", "Tempo (min)"]}, "Cidade": {"keys": ["codigo", "nome", "estado"], "headers": ["Código", "Nome", "Estado"]}, "Bairro": {"keys": ["codigo", "nome"], "headers": ["Código", "Nome"]}, "Cliente": {"keys": ["codigo", "nome", "cpf", "dt_aniversario", "endereco", "numero", "codigo_cidade", "codigo_bairro", "cep", "celular", "email", "status_financeiro"], "headers": ["Código", "Nome", "CPF", "Nascimento", "Endereço", "Número", "Cidade (cód.)", "Bairro (cód.)", "CEP", "Celular", "E-mail", "Status financeiro"]}, "Agendamento": {"keys": ["codigo", "data", "hora", "codigoFuncionario", "codigoCliente", "codigoServico", "valor", "status", "previsaoFalta"], "headers": ["Código", "Data", "Hora", "Funcionário", "Cliente", "Serviço", "Valor", "Status", "Previsão de Falta (%)"]}};
+
+    /** Atualiza a coluna I mediante comando explícito, sem mudar o histórico. */
+    function atualizarPrevisoesFaltaTela() {
+      var mensagem = document.getElementById("mensagemPrevisaoFalta");
+      mensagem.textContent = "Calculando previsões experimentais...";
+      google.script.run.withSuccessHandler(function (resultado) {
+        mensagem.textContent = resultado;
+        carregarGradeCadastro("Agendamento");
+      }).withFailureHandler(function (erro) {
+        mensagem.textContent = "Falha ao atualizar: " + (erro.message || erro);
+      }).atualizarPrevisoesFaltaAgenda();
+    }
 
     /** Busca registros pelo Service e atualiza a grade sem recarregar a página. */
     function carregarGradeCadastro(entidade) {
