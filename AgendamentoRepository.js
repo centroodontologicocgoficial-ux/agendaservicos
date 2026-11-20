@@ -405,7 +405,33 @@ var AgendamentoRepository = (function() {
       });
   }
 
+  /**
+   * Atualiza somente a coluna I da AGENDA, sem alterar os oito campos originais.
+   * @param {Object} previsoes Mapa por código, com percentuais ou texto.
+   * @return {number} Quantidade de previsões escritas.
+   */
+  function salvarPrevisoesFalta(previsoes) {
+    var aba = obterAba_(ABA_AGENDA);
+    verificarCabecalhos_(aba, ["Código", "Data", "Hora", "Codigo_funcionario",
+      "Codigo_cliente", "Codigo_servico", "Valor", "Status"]);
+    var cabecalho = String(aba.getRange(1, 9).getDisplayValue()).trim();
+    if (cabecalho && cabecalho !== "Previsão de Falta (%)") {
+      throw new Error("Coluna I já está ocupada: " + cabecalho);
+    }
+    aba.getRange(1, 9).setValue("Previsão de Falta (%)");
+    var ultima = aba.getLastRow();
+    if (ultima < 2) return 0;
+    var codigos = aba.getRange(2, 1, ultima - 1, 1).getDisplayValues();
+    var valores = codigos.map(function (linha) {
+      return [Object.prototype.hasOwnProperty.call(previsoes, linha[0])
+        ? previsoes[linha[0]] : ""];
+    });
+    aba.getRange(2, 9, valores.length, 1).setValues(valores);
+    return valores.filter(function (linha) { return linha[0] !== ""; }).length;
+  }
+
   return {
+    salvarPrevisoesFalta: salvarPrevisoesFalta,
     buscarContatoCliente: buscarContatoCliente,
     listarParaLembretes: listarParaLembretes,
     listarParaConflito: listarParaConflito,
