@@ -156,3 +156,14 @@ Executar testes controlados com mensagens de exemplo e planilha de testes; corri
 - Adicionado botão explícito `Buscar CEP`, tipo `button`, ao lado do campo CEP, para consultar mesmo quando a digitação/colagem não dispara o evento esperado. A busca pode ser repetida e mostra o resultado no formulário.
 - Criados: nenhum. Alterados: `index.html`, `ClienteCep.test.cjs`, `PROJECT_STATUS.md`. Mantidos: `ClienteService.js`, `ClienteRepository.js`, `ClienteValidator.js`, `ClienteRules.js` e demais arquivos. Excluídos: nenhum.
 - Testes: executar `node ClienteCep.test.cjs`; no navegador, informar CEP, clicar Buscar CEP e observar mensagem sob o campo. A integração real permanece dependente da resposta do ViaCEP e do navegador.
+
+## KNN experimental de previsão de falta — 19/11/2026
+- Ramificação: `feature/knn-previsao-falta-20261119`; não publicada em produção.
+- Confirmada leitura da aba AGENDA: 206 agendamentos, sendo 155 COMPARECEU, 45 FALTOU e 6 AGENDADO.
+- Criados `AgendamentoKnnRules.js` e `AgendamentoKnn.test.cjs`.
+- Alterados `AgendamentoRepository.js`, `AgendamentoService.js`, `index.html` e este status.
+- Modelo KNN de 7 vizinhos, com dia da semana, horário, cliente, profissional e serviço; apenas status concluídos treinam. Sem dados suficientes, retorna texto informativo.
+- Interface inclui coluna Previsão de Falta (%) e botão de atualização explícita; Repository escreve apenas na coluna I.
+- Demais arquivos mantidos; nenhum excluído.
+- Previsões são experimentais, pois a base histórica é simulada; não representam risco clínico calibrado.
+- Pendências: executar `node AgendamentoKnn.test.cjs`, validar com Apps Script/Sheets em cópia de teste, verificar permissões, desempenho e publicar somente após homologação. 
