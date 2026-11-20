@@ -167,3 +167,12 @@ Executar testes controlados com mensagens de exemplo e planilha de testes; corri
 - Demais arquivos mantidos; nenhum excluído.
 - Previsões são experimentais, pois a base histórica é simulada; não representam risco clínico calibrado.
 - Pendências: executar `node AgendamentoKnn.test.cjs`, validar com Apps Script/Sheets em cópia de teste, verificar permissões, desempenho e publicar somente após homologação. 
+
+## Validação adicional KNN — 19/11/2026
+- Verificada sintaxe JavaScript de AgendamentoKnnRules.js, AgendamentoService.js e AgendamentoRepository.js: sem erros de compilação.
+- Executados quatro cenários isolados do KNN: histórico insuficiente, 100% de faltas nos vizinhos, 0% de faltas e exclusão de agendamentos pendentes do treinamento. Todos passaram.
+- Atualizado .github/workflows/agendamento-tests.yml para incluir AgendamentoKnn.test.cjs nos testes de pull request.
+- GitHub Actions: nenhuma execução ou status de CI encontrado para o commit e09944e5319789f53c12467375b18f418044886d no momento da consulta.
+- Planilha: cabeçalho I1 e previsões I2:I7 previamente gravados e conferidos; A:H preservadas.
+- Arquivos alterados nesta etapa: .github/workflows/agendamento-tests.yml e PROJECT_STATUS.md; arquivos criados ou excluídos: nenhum; demais arquivos mantidos.
+- Pendente: homologação com Google Apps Script implantado, CI e revisão do pull request #14 antes de mesclar na main. 
