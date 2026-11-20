@@ -156,3 +156,15 @@ Executar testes controlados com mensagens de exemplo e planilha de testes; corri
 - Adicionado botão explícito `Buscar CEP`, tipo `button`, ao lado do campo CEP, para consultar mesmo quando a digitação/colagem não dispara o evento esperado. A busca pode ser repetida e mostra o resultado no formulário.
 - Criados: nenhum. Alterados: `index.html`, `ClienteCep.test.cjs`, `PROJECT_STATUS.md`. Mantidos: `ClienteService.js`, `ClienteRepository.js`, `ClienteValidator.js`, `ClienteRules.js` e demais arquivos. Excluídos: nenhum.
 - Testes: executar `node ClienteCep.test.cjs`; no navegador, informar CEP, clicar Buscar CEP e observar mensagem sob o campo. A integração real permanece dependente da resposta do ViaCEP e do navegador.
+
+## Correção do conflito no cadastro manual — 19/11/2026
+- Implementada em ramificação `fix/conflito-agendamento-manual-20261119`, ainda não homologada.
+- `AgendamentoService.js` agora consulta `AgendamentoRepository.listarParaConflito()` e `listarServicos()` e reutiliza `AgendamentoRules.validarDisponibilidadeEmail()` antes da gravação.
+- A leitura, validação e gravação ficam protegidas por `LockService.getScriptLock()`; a trava é liberada antes do envio de confirmação para evitar bloqueio aninhado.
+- Criado `AgendamentoCadastroManual.test.cjs` para testar conflito, horário adjacente, confirmação e liberação da trava.
+- Atualizado `.github/workflows/agendamento-tests.yml` para incluir o teste em pull requests para `main`.
+- Arquivos criados: `AgendamentoCadastroManual.test.cjs`.
+- Arquivos alterados: `AgendamentoService.js`, `.github/workflows/agendamento-tests.yml`, `PROJECT_STATUS.md`.
+- Arquivos mantidos: `AgendamentoRules.js`, `AgendamentoRepository.js`, `AgendamentoValidator.js`, interface e demais arquivos.
+- Arquivos excluídos: nenhum.
+- Testes pendentes: executar `node AgendamentoCadastroManual.test.cjs` e validar no Apps Script com planilha de testes, inclusive solicitações simultâneas. Não publicar em produção antes de homologar.
