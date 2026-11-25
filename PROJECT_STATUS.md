@@ -181,3 +181,8 @@ Executar testes controlados com mensagens de exemplo e planilha de testes; corri
 - Ramificação feature/deep-learning-dashboard: correção de data_cadastro e coluna KNN; módulos Repository, Validator, Rules, Service e Interface criados; menu integrado em index.html; teste isolado criado.
 - Nenhum arquivo excluído; planilha original preservada.
 - Pendente: executar testes, eliminar duplicação da interface (index contém cópia), verificar dados históricos e homologar na cópia da planilha, revisar CI e publicar Apps Script. Não homologado.
+
+## Ajuda dos parâmetros Deep Learning — 24/11/2026
+- PR 15 integrado à main; CI execução 24 aprovada. Usuário apresentou tela publicada com treinamento concluído e zero registros inválidos/duplicados.
+- Adicionadas descrições individuais acessíveis aos oito parâmetros em index.html e AgendamentoDeepLearningInterface.html, mantendo valores e lógica. Duplicação preexistente da interface mantida nesta alteração pontual.
+- Nenhum arquivo criado ou excluído; demais módulos preservados. Teste visual da nova versão e confirmação de implantação pendentes.
