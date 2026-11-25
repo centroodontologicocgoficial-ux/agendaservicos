@@ -181,7 +181,8 @@ var AgendamentoRepository = (function() {
 
     var codigoAgendamento = gerarProximoCodigo_(aba);
 
-    aba.appendRow([
+    var colunaCadastro = localizarColunaExtra_(aba, "data_cadastro");
+    var linha = [
       codigoAgendamento,
       agendamento.data,
       agendamento.hora,
@@ -190,11 +191,14 @@ var AgendamentoRepository = (function() {
       agendamento.codigoServico,
       agendamento.valor,
       agendamento.status
-    ]);
+    ];
+    linha[colunaCadastro - 1] = new Date();
+    aba.appendRow(linha);
 
     var ultimaLinha = aba.getLastRow();
 
     // Formata somente a linha recém-gravada.
+    aba.getRange(ultimaLinha, colunaCadastro).setNumberFormat("dd/MM/yyyy HH:mm:ss");
     aba.getRange(ultimaLinha, 2).setNumberFormat("dd/MM/yyyy");
     aba.getRange(ultimaLinha, 7).setNumberFormat('"R$" #,##0.00');
 
@@ -405,8 +409,22 @@ var AgendamentoRepository = (function() {
       });
   }
 
+  /** Localiza cabeçalho extra sem sobrescrever colunas existentes. */
+  function localizarColunaExtra_(aba, nome) {
+    var normalizar = function(v) { return String(v).normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]/g, ""); };
+    var ultima = Math.max(8, aba.getLastColumn());
+    var titulos = aba.getRange(1, 1, 1, ultima).getDisplayValues()[0];
+    var indices = [];
+    titulos.forEach(function(t, i) { if (normalizar(t) === normalizar(nome)) indices.push(i + 1); });
+    if (indices.length > 1 || (indices.length && indices[0] <= 8)) throw new Error("Cabeçalho ambíguo: " + nome);
+    if (indices.length) return indices[0];
+    if (ultima >= aba.getMaxColumns()) aba.insertColumnAfter(ultima);
+    aba.getRange(1, ultima + 1).setValue(nome);
+    return ultima + 1;
+  }
+
   /**
-   * Atualiza somente a coluna I da AGENDA, sem alterar os oito campos originais.
+   * Atualiza somente a coluna de previsão de falta, localizada pelo cabeçalho.
    * @param {Object} previsoes Mapa por código, com percentuais ou texto.
    * @return {number} Quantidade de previsões escritas.
    */
@@ -414,11 +432,7 @@ var AgendamentoRepository = (function() {
     var aba = obterAba_(ABA_AGENDA);
     verificarCabecalhos_(aba, ["Código", "Data", "Hora", "Codigo_funcionario",
       "Codigo_cliente", "Codigo_servico", "Valor", "Status"]);
-    var cabecalho = String(aba.getRange(1, 9).getDisplayValue()).trim();
-    if (cabecalho && cabecalho !== "Previsão de Falta (%)") {
-      throw new Error("Coluna I já está ocupada: " + cabecalho);
-    }
-    aba.getRange(1, 9).setValue("Previsão de Falta (%)");
+    var coluna = localizarColunaExtra_(aba, "Previsão de Falta (%)");
     var ultima = aba.getLastRow();
     if (ultima < 2) return 0;
     var codigos = aba.getRange(2, 1, ultima - 1, 1).getDisplayValues();
@@ -426,7 +440,7 @@ var AgendamentoRepository = (function() {
       return [Object.prototype.hasOwnProperty.call(previsoes, linha[0])
         ? previsoes[linha[0]] : ""];
     });
-    aba.getRange(2, 9, valores.length, 1).setValues(valores);
+    aba.getRange(2, coluna, valores.length, 1).setValues(valores);
     return valores.filter(function (linha) { return linha[0] !== ""; }).length;
   }
 
