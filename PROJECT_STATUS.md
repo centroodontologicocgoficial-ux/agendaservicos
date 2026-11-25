@@ -176,3 +176,8 @@ Executar testes controlados com mensagens de exemplo e planilha de testes; corri
 - Planilha: cabeçalho I1 e previsões I2:I7 previamente gravados e conferidos; A:H preservadas.
 - Arquivos alterados nesta etapa: .github/workflows/agendamento-tests.yml e PROJECT_STATUS.md; arquivos criados ou excluídos: nenhum; demais arquivos mantidos.
 - Pendente: homologação com Google Apps Script implantado, CI e revisão do pull request #14 antes de mesclar na main. 
+
+## Deep Learning — 24/11/2026
+- Ramificação feature/deep-learning-dashboard: correção de data_cadastro e coluna KNN; módulos Repository, Validator, Rules, Service e Interface criados; menu integrado em index.html; teste isolado criado.
+- Nenhum arquivo excluído; planilha original preservada.
+- Pendente: executar testes, eliminar duplicação da interface (index contém cópia), verificar dados históricos e homologar na cópia da planilha, revisar CI e publicar Apps Script. Não homologado.
